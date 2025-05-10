@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import filedialog
-from huffman import huffmanCoding
+from huffman import huffmanCoding, huffmanDecoding
 import os
 
 
@@ -66,13 +66,18 @@ def encode_file(file_path):
 def decode_file_popup():
     decoding_window = ctk.CTkToplevel(window)
     decoding_window.title("Decode File")
-    decoding_window.geometry("520x320")
+    decoding_window.geometry("520x480")
     decoding_window.grab_set()
+
+    output_label = None
+    output_textbox = None
+    status_label = None
 
     ctk.CTkLabel(decoding_window, text="Selected file to decode:").pack(pady=(10, 5))
 
     bin_path_entry = ctk.CTkEntry(decoding_window, width=380)
     bin_path_entry.pack(pady=5)
+
     def browse_bin_file():
         file_path = filedialog.askopenfilename(
             title="Select a file",
@@ -82,9 +87,10 @@ def decode_file_popup():
         if file_path:
             bin_path_entry.delete(0, "end")
             bin_path_entry.insert(0, file_path)
+
     browse_button = ctk.CTkButton(decoding_window, text="Browse Binary File", command=browse_bin_file)
     browse_button.pack(pady=5)
-    
+
     ctk.CTkLabel(decoding_window, text="Selected dictionary file to decode upon:").pack(pady=(10, 5))
 
     dict_path_entry = ctk.CTkEntry(decoding_window, width=380)
@@ -94,32 +100,77 @@ def decode_file_popup():
         file_path = filedialog.askopenfilename(
             title="Select a file",
             initialdir=".",
-            filetypes=[("text Files", "*dict.txt")]
+            filetypes=[("Text Files", "*dict.txt")]
         )
         if file_path:
             dict_path_entry.delete(0, "end")
             dict_path_entry.insert(0, file_path)
+
     browse_dict_button = ctk.CTkButton(decoding_window, text="Browse Dictionary Text File", command=browse_dict_file)
     browse_dict_button.pack(pady=5)
-    
+
     def confirm_and_decode():
+        nonlocal output_label, output_textbox, status_label
+
         bin_file_path = bin_path_entry.get()
         dict_file_path = dict_path_entry.get()
+
         if os.path.exists(bin_file_path) and os.path.exists(dict_file_path):
-            decode_file(bin_file_path, dict_file_path)
-            ctk.CTkLabel(decoding_window, text="✅ Encoding completed!", text_color="green").pack(pady=(5, 0))
+            decoded_string = decode_file(bin_file_path, dict_file_path)
+            if decoded_string:
+                if output_label:
+                    output_label.destroy()
+                if output_textbox:
+                    output_textbox.destroy()
+                if status_label:
+                    status_label.destroy()
+
+                output_label = ctk.CTkLabel(decoding_window, text="Decoded Output:")
+                output_label.pack()
+
+                output_textbox = ctk.CTkTextbox(decoding_window, width=380, height=100)
+                output_textbox.pack(pady=5)
+                output_textbox.configure(state="normal") 
+                output_textbox.delete(1.0, "end") 
+                output_textbox.insert("end", decoded_string) 
+                output_textbox.configure(state="disabled")
+
+                status_label = ctk.CTkLabel(decoding_window, text="✅ Decoding completed!", text_color="green")
+                status_label.pack(pady=(5, 0))
         else:
-            ctk.CTkLabel(decoding_window, text="❌ Invalid file path.", text_color="red").pack(pady=(5, 0))
+            if status_label:
+                status_label.destroy()
+            status_label = ctk.CTkLabel(decoding_window, text="❌ Invalid file path.", text_color="red")
+            status_label.pack(pady=(5, 0))
 
     confirm_button = ctk.CTkButton(decoding_window, text="Decode", command=confirm_and_decode)
     confirm_button.pack(pady=20)
 
-def decode_file(bin_file_path, dict_file_path):
-    if not bin_file_path:
-        return
 
-    if not dict_file_path:
-        return
+def decode_file(bin_file_path, dict_file_path):
+    if bin_file_path and dict_file_path:
+        with open(bin_file_path, "rb") as file:
+            bin_file_content = file.read()
+            bit_string = ''.join(f'{byte:08b}' for byte in bin_file_content)
+
+        with open(dict_file_path, "r") as file:
+            dict_file_content = file.read() 
+        return huffmanDecoding(bit_string,parse_huffman_dict(dict_file_content))
+
+def parse_huffman_dict(mapping_str):
+    huffman_dict = {}
+    lines = mapping_str.splitlines()
+    for line in lines:
+        if ": " in line:
+            char, code = line.split(": ", 1)
+            if char == "":
+                if line.startswith(": "): 
+                    huffman_dict["\n"] = code
+            elif char == " ":
+                huffman_dict[" "] = code
+            else:
+                huffman_dict[char] = code
+    return huffman_dict
 
 
 
