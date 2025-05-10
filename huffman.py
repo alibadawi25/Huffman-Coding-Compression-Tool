@@ -36,3 +36,21 @@ def huffmanCoding(inputString):
         huffmanCode[i[0]] = i[1]
 
     return huffmanCode
+
+# def huffmanDecoding(encodedStr, huffmanCode):
+#     # Reverse the huffmanCode dictionary to map binary codes to characters
+#     reverse_huffman_code = {v: k for k, v in huffmanCode.items()}
+    
+#     decodedStr = ""
+#     current_code = ""
+    
+#     # Traverse the encoded string
+#     for bit in encodedStr:
+#         current_code += bit
+        
+#         # Check if the current code matches any of the binary codes in reverse_huffman_code
+#         if current_code in reverse_huffman_code:
+#             decodedStr += reverse_huffman_code[current_code]  # Append the decoded character
+#             current_code = ""  # Reset the current code
+    
+#     return decodedStr
