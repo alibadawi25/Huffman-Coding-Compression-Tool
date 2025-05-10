@@ -30,6 +30,13 @@ def encode_file():
             for char, code in huffmanCode.items():
                 dict_file.write(f"{char}: {code}\n")
 
+def decode_file():
+    file_path = filedialog.askopenfilename(
+        title="Select a file",
+        initialdir=".",
+        filetypes=[("Text Files", "*.txt")]
+    )
+
 window = ctk.CTk()
 
 window.title("Huffman Coding Compression Tool")

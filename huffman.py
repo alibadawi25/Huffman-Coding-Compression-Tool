@@ -6,6 +6,7 @@ import heapq
 def huffmanCoding(inputString):
     charFreq = {}
     heap = []
+    huffmanTree = {}
 
     for i in inputString:
         charFreq[i] = charFreq.get(i, 0) + 1
