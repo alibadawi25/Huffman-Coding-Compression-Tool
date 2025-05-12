@@ -86,9 +86,6 @@ def create_canvas():
     pass
 
 
-global_timer = 0
-
-
 def draw_tree_popup(tree_root, old_popup):
     popup = old_popup
     if not popup:
@@ -118,10 +115,25 @@ def draw_tree_popup(tree_root, old_popup):
 
     set_positions(tree_root)
 
-    # Step 2: Draw nodes
-    def draw_node(node):
+    # Step 2: Collect tree by transversing in reverse
+    tree = []
+
+    def collect_tree(node):
         if node is None:
             return
+        tree.append(node)
+        collect_tree(node.left)
+        collect_tree(node.right)
+
+    collect_tree(tree_root)
+
+    # Step 3: Draw nodes
+    timer = 0
+    for node in reversed(tree):
+        canvas.after(timer * 500, lambda n=node: draw_node(n))
+        timer += 1
+
+    def draw_node(node):
 
         x, y = positions[node]
         label = node.char if node.char is not None else f"{node.freq}"
@@ -132,12 +144,8 @@ def draw_tree_popup(tree_root, old_popup):
         if node.left:
             x_left, y_left = positions[node.left]
             canvas.create_line(x, y + radius, x_left, y_left - radius)
-            canvas.after(global_timer + 1000, lambda: draw_node(node.left))
         if node.right:
             x_right, y_right = positions[node.right]
             canvas.create_line(x, y + radius, x_right, y_right - radius)
-            canvas.after(global_timer + 1000, lambda: draw_node(node.right))
-
-    draw_node(tree_root)
 
     return popup
