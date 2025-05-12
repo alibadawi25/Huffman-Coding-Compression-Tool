@@ -22,8 +22,8 @@ def huffmanCoding(inputString):
     heap = [[freq, Node(char, freq)] for char, freq in charFreq.items()]
     heapq.heapify(heap)
     popup = None
+    tree = []
     while len(heap) > 1:
-        tree = ""
         lo = heapq.heappop(heap)
         hi = heapq.heappop(heap)
 
@@ -31,6 +31,9 @@ def huffmanCoding(inputString):
         merged_node = Node(None, merged_freq)
         merged_node.left = lo[1]
         merged_node.right = hi[1]
+        tree.append(merged_node.left)
+        tree.append(merged_node.right)
+        tree.append(merged_node)
         print(f"{merged_freq}")
         print(
             f"|\n|_ {lo[1].freq} [{lo[1].char}]"
@@ -45,11 +48,11 @@ def huffmanCoding(inputString):
         print("\n------------------------------------------------------------")
 
         heapq.heappush(heap, [merged_freq, merged_node])
+
         if not popup:
-            popup = draw_tree_popup(merged_node, popup)
+            popup = draw_tree_popup(merged_node, popup, tree)
         else:
-            time.sleep(0.5)
-            draw_tree_popup(merged_node, popup)
+            draw_tree_popup(merged_node, popup, tree)
 
     root = heap[0][1]
 
@@ -86,21 +89,22 @@ def create_canvas():
     pass
 
 
-def draw_tree_popup(tree_root, old_popup):
+def draw_tree_popup(tree_root, old_popup, tree):
     popup = old_popup
     if not popup:
         popup = ctk.CTkToplevel()
         popup.title("Huffman Tree")
         popup.geometry("1000x700")
         popup.grab_set()
+
     canvas = ctk.CTkCanvas(popup, bg="white")
     canvas.place(relwidth=1, relheight=1)
+
     radius = 15
     x_spacing = 30
     y_spacing = 60
     positions = {}
-    current_x = [0]  # mutable wrapper
-    # mutable wrapper
+    current_x = [0]
 
     # Step 1: Traverse and calculate positions
     def set_positions(node, depth=0):
@@ -115,26 +119,25 @@ def draw_tree_popup(tree_root, old_popup):
 
     set_positions(tree_root)
 
-    # Step 2: Collect tree by transversing in reverse
-    tree = []
+    # def collect_tree(node):
+    #     if node is None:
+    #         return
+    #     tree.append(node)
+    #     collect_tree(node.left)
+    #     collect_tree(node.right)
 
-    def collect_tree(node):
-        if node is None:
-            return
-        tree.append(node)
-        collect_tree(node.left)
-        collect_tree(node.right)
+    # collect_tree(tree_root)
 
-    collect_tree(tree_root)
+    # # Step 3: Sort by frequency (least to greatest)
+    # tree.sort(key=lambda node: node.freq)
 
-    # Step 3: Draw nodes
+    # Step 4: Draw nodes
     timer = 0
-    for node in reversed(tree):
+    for node in tree:
         canvas.after(timer * 500, lambda n=node: draw_node(n))
         timer += 1
 
     def draw_node(node):
-
         x, y = positions[node]
         label = node.char if node.char is not None else f"{node.freq}"
         canvas.create_oval(

@@ -58,7 +58,7 @@ def encode_file_popup():
             status_label = ctk.CTkLabel(encoding_window, text="✅ Encoding completed!", text_color="green")
             status_label.pack(pady=(5, 0))
 
-            draw_button = ctk.CTkButton(encoding_window, text="Draw Tree", command=lambda: draw_tree_popup(tree))
+            draw_button = ctk.CTkButton(encoding_window, text="Show Tree", command=lambda: draw_tree_popup(tree))
             draw_button.pack(pady=10)
         else:
             if status_label:
