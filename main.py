@@ -2,7 +2,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 from huffman import huffmanCoding, huffmanDecoding, Node
 import os
-
+import time
 
 def encode_file_popup():
     encoding_window = ctk.CTkToplevel(window)
@@ -237,12 +237,10 @@ def draw_tree_popup(tree_root):
         label = node.char if node.char is not None else f"{node.freq}"
         canvas.create_oval(x - radius, y - radius, x + radius, y + radius, fill="skyblue")
         canvas.create_text(x, y, text=label)
-
         if node.left:
             x_left, y_left = positions[node.left]
             canvas.create_line(x, y + radius, x_left, y_left - radius)
             draw_node(node.left)
-
         if node.right:
             x_right, y_right = positions[node.right]
             canvas.create_line(x, y + radius, x_right, y_right - radius)

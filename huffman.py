@@ -1,4 +1,6 @@
 import heapq
+import customtkinter as ctk
+import time
 
 class Node:
     def __init__(self, char=None, freq=0):
@@ -18,7 +20,7 @@ def huffmanCoding(inputString):
 
     heap = [[freq, Node(char, freq)] for char, freq in charFreq.items()]
     heapq.heapify(heap)
-
+    popup = None
     while len(heap) > 1:
         tree = ""
         lo = heapq.heappop(heap)
@@ -32,8 +34,14 @@ def huffmanCoding(inputString):
         print(f"|\n|_ {lo[1].freq} [{lo[1].char}]" if lo[1].char is not None else f"|\n|_ {lo[1].freq} <Node>")
         print(f"|\n|_ {hi[1].freq} [{hi[1].char}]" if hi[1].char is not None else f"|\n|_ {hi[1].freq} <Node>")
         print("\n------------------------------------------------------------")
-
+        
         heapq.heappush(heap, [merged_freq, merged_node])
+        if not popup:
+            popup = draw_tree_popup(merged_node, popup)
+        else:
+            time.sleep(0.5)
+            draw_tree_popup(merged_node, popup)
+
 
     root = heap[0][1]
 
@@ -64,3 +72,58 @@ def huffmanDecoding(encodedStr, huffmanCode):
             current_code = ""
 
     return decodedStr
+
+def create_canvas():
+    pass
+
+
+
+def draw_tree_popup(tree_root, old_popup):
+    popup = old_popup
+    if not popup:
+        popup = ctk.CTkToplevel()
+        popup.title("Huffman Tree")
+        popup.geometry("1000x700")
+        popup.grab_set()
+    canvas = ctk.CTkCanvas(popup, bg="white")
+    canvas.place(relwidth=1, relheight=1)
+    radius = 15
+    x_spacing = 30
+    y_spacing = 60
+    positions = {}
+    current_x = [0]  # mutable wrapper
+
+    # Step 1: Traverse and calculate positions
+    def set_positions(node, depth=0):
+        if node is None:
+            return
+        set_positions(node.left, depth + 1)
+        x = current_x[0]
+        y = depth * y_spacing
+        positions[node] = (x * x_spacing + 50, y + 50)
+        current_x[0] += 1
+        set_positions(node.right, depth + 1)
+
+    set_positions(tree_root)
+
+    # Step 2: Draw nodes
+    def draw_node(node):
+        if node is None:
+            return
+
+        x, y = positions[node]
+        label = node.char if node.char is not None else f"{node.freq}"
+        canvas.create_oval(x - radius, y - radius, x + radius, y + radius, fill="skyblue")
+        canvas.create_text(x, y, text=label)
+        if node.left:
+            x_left, y_left = positions[node.left]
+            canvas.create_line(x, y + radius, x_left, y_left - radius)
+            draw_node(node.left)
+        if node.right:
+            x_right, y_right = positions[node.right]
+            canvas.create_line(x, y + radius, x_right, y_right - radius)
+            draw_node(node.right)
+
+    draw_node(tree_root)
+
+    return popup
